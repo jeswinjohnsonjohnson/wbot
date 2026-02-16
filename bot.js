@@ -49,3 +49,21 @@ client.on('message', async msg => {
 });
 
 client.initialize();
+
+const puppeteer = require('puppeteer-core');
+
+(async () => {
+  try {
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
+    });
+
+    const page = await browser.newPage();
+    await page.goto('https://example.com');  // Replace with your URL
+    console.log('Page title:', await page.title());
+
+    await browser.close();
+  } catch (err) {
+    console.error('Error launching browser:', err);
+  }
+})();
