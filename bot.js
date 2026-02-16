@@ -1,27 +1,31 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
 
 const MY_NAME = 'Jeswin';
 const TARGET_GROUP = 'Hi';
 const COOLDOWN = 1000 * 60 * 10; // 10 minutes
 let lastReplyTime = 0;
 
-// Use puppeteer-core with Browserless
 const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'bot', dataPath: process.env.DATA_PATH || './auth' }),
     puppeteer: {
         headless: true,
-        executablePath: undefined, // important for puppeteer-core
+        executablePath: undefined,
         browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
     }
 });
 
-client.on('qr', qr => {
+// QR handler: prints a very small QR code in terminal
+client.on('qr', async qr => {
     console.log('Scan this QR code in WhatsApp:');
-    qrcode.generate(qr, { small: true });
+    try {
+        // tiny ASCII version
+        const asciiQr = await QRCode.toString(qr, { type: 'terminal', small: true });
+        console.log(asciiQr);
+    } catch (err) {
+        console.error('Error generating QR code:', err);
+    }
 });
-
-
 
 client.on('ready', () => {
     console.log('Bot is ready ✔️');
