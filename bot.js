@@ -6,9 +6,14 @@ const TARGET_GROUP = 'Hi';
 const COOLDOWN = 1000 * 60 * 10; // 10 minutes
 let lastReplyTime = 0;
 
+// Use puppeteer-core with Browserless
 const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'bot', dataPath: process.env.DATA_PATH || './auth' }),
-    puppeteer: { headless: true } // headless for server
+    puppeteer: {
+        headless: true,
+        executablePath: undefined, // important for puppeteer-core
+        browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
+    }
 });
 
 client.on('qr', qr => {
@@ -49,21 +54,3 @@ client.on('message', async msg => {
 });
 
 client.initialize();
-
-const puppeteer = require('puppeteer-core');
-
-(async () => {
-  try {
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
-    });
-
-    const page = await browser.newPage();
-    await page.goto('https://example.com');  // Replace with your URL
-    console.log('Page title:', await page.title());
-
-    await browser.close();
-  } catch (err) {
-    console.error('Error launching browser:', err);
-  }
-})();
