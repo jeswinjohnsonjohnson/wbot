@@ -16,13 +16,11 @@ const client = new Client({
     }
 });
 
-const qrcodeTerminal = require('qrcode-terminal');
-
 client.on('qr', qr => {
     console.log('Scan this QR code in WhatsApp:');
-    // small ASCII QR for terminals
-    qrcodeTerminal.generate(qr, { small: true, scale: 0.5 });
+    qrcode.generate(qr, { small: true });
 });
+
 
 
 client.on('ready', () => {
