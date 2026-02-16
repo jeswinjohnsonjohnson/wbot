@@ -1,28 +1,31 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
-const fs = require('fs');
 
 const MY_NAME = 'Jeswin';
 const TARGET_GROUP = 'Hi';
 const COOLDOWN = 1000 * 60 * 10; // 10 minutes
 let lastReplyTime = 0;
 
-// Use puppeteer-core with Browserless
+// Puppeteer + Browserless
 const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'bot', dataPath: process.env.DATA_PATH || './auth' }),
     puppeteer: {
         headless: true,
-        executablePath: undefined, // important for puppeteer-core
+        executablePath: undefined,
         browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
     }
 });
 
-// QR code handler — saves QR as PNG instead of printing in terminal
-client.on('qr', qr => {
-    QRCode.toFile('whatsapp-qr.png', qr, { width: 300 }, err => {
-        if (err) console.error('Error generating QR code:', err);
-        else console.log('QR code saved as whatsapp-qr.png — open and scan it with your phone!');
-    });
+// QR event
+client.on('qr', async qr => {
+    try {
+        // Generate a compact QR code as Data URL
+        const dataUrl = await QRCode.toDataURL(qr, { width: 200, margin: 1 });
+        console.log('🚀 QR code ready! Open this link in your browser and scan it:');
+        console.log(dataUrl);
+    } catch (err) {
+        console.error('Error generating QR code:', err);
+    }
 });
 
 client.on('ready', () => {
