@@ -1,35 +1,34 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode');
-const puppeteer = require('puppeteer-core');
+const qrcode = require('qrcode-terminal');
 
 const MY_NAME = 'Jeswin';
 const TARGET_GROUP = 'Hi';
 const COOLDOWN = 1000 * 60 * 10; // 10 minutes
 let lastReplyTime = 0;
 
-// WhatsApp Client
+// Use puppeteer-core with Browserless
 const client = new Client({
-    authStrategy: new LocalAuth({ clientId: 'bot', dataPath: './auth' }),
-    puppeteer: { headless: true } // headless mode for server
+    authStrategy: new LocalAuth({ clientId: 'bot', dataPath: process.env.DATA_PATH || './auth' }),
+    puppeteer: {
+        headless: true,
+        executablePath: undefined, // important for puppeteer-core
+        browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
+    }
 });
 
-// Generate small QR to file for scanning
 client.on('qr', qr => {
-    qrcode.toFile('qr.png', qr, { width: 200, margin: 1 }, err => {
-        if (err) console.error('Error generating QR:', err);
-        else console.log('QR code saved to qr.png — download and scan it with your phone');
-    });
+    console.log('Scan this QR code in WhatsApp:');
+    qrcode.generate(qr, { small: true, scale: 1 });
+
 });
 
-// WhatsApp ready
 client.on('ready', () => {
     console.log('Bot is ready ✔️');
 });
 
-// Listen for messages in a specific group
 client.on('message', async msg => {
     try {
-        if (!msg.from.endsWith('@g.us')) return; // only group messages
+        if (!msg.from.endsWith('@g.us')) return;
         if (msg.fromMe) return;
 
         const chat = await msg.getChat();
@@ -56,20 +55,3 @@ client.on('message', async msg => {
 });
 
 client.initialize();
-
-// Puppeteer tasks using Browserless (no local Chrome needed)
-(async () => {
-  try {
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: 'wss://chrome.browserless.io?token=2TzEdpbrTA592M484cc3561e35cf8287cd188f81cbf86bf0d'
-    });
-
-    const page = await browser.newPage();
-    await page.goto('https://example.com');  // Replace with your URL
-    console.log('Page title:', await page.title());
-
-    await browser.close();
-  } catch (err) {
-    console.error('Error launching browser:', err);
-  }
-})();
